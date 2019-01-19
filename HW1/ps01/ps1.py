@@ -233,14 +233,25 @@ def difference_image(img1, img2):
 
     Returns:
         numpy.array: Output 2D image containing the result of subtracting img2 from img1.
-    """
-
+    """    
 
     temp_img1 = np.copy(img1)
     temp_img2 = np.copy(img2)
     temp_out = temp_img1 - temp_img2
-    temp_out = cv2.normalize(temp_out, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_64F)
-    return temp_out
+
+
+    temp_out = temp_out.astype('float64')
+    Max = temp_out.max()
+    Min = temp_out.min()
+
+    if (Max - Min == 0):
+        return temp_out*0.
+    else :
+        temp_out =  ((temp_out- Min)/(Max - Min) * 255)
+        return temp_out
+
+    #temp_out = cv2.normalize(temp_out, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_64F)
+    
     raise NotImplementedError
 
 

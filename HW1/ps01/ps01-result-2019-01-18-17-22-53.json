@@ -1,0 +1,89 @@
+{
+    "unauthorized_lib_calls": [],
+    "tests": [
+        {
+            "traceback": "Traceback (most recent call last):\n  File \"/home/grader/ps01/CVResult.py\", line 29, in func_wrapper\n    ans = func(self)\n  File \"run.py\", line 274, in test_differenceimage\n    \"Correct answer: \\n{}\".format(student, ref))\nAssertionError: The difference at one pixel value was unexpectedly large. Make sure you subtract the shifted image from the original and not the other way around. Additionally, the pixel values should be normalized and scaled using a min max method so they are in [0, 255]. Finally, make sure you pay special attention to which data type you use when performing arithmetic operations.\nStudent's answer: \n[[nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]\n [nan nan nan nan nan nan nan nan nan nan nan]]\nCorrect answer: \n[[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]\n [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]\n",
+            "output": {
+                "passfail": "failed"
+            },
+            "description": "Test for difference Image (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for add_noise (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for copy_paste_middle (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for extractGreen (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for extractRed (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for image_stats max return value (5 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for image_stats mean return value (5 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for image_stats min return value (5 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for image_stats stddev return value (5 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for center normalized (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for shiftImageLeft (10 points)"
+        },
+        {
+            "traceback": "",
+            "output": {
+                "passfail": "passed"
+            },
+            "description": "Test for swap_green_blue (10 points)"
+        }
+    ]
+}
