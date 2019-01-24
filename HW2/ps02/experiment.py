@@ -41,7 +41,7 @@ def draw_tl_center(image_in, center, state):
     font      = cv2.FONT_HERSHEY_SIMPLEX
     center = (int(center[0]), int(center[1]))
     testLoc   = (int(center[0] + 50), int(center[1]))
-    fontScale = 0.5
+    fontScale = 0.4
     fontColor = (0, 0, 0)
     lineType  = 1
     string ="(" + str(center) + ', ' +str(state) + ")"
@@ -75,6 +75,20 @@ def mark_traffic_signs(image_in, signs_dict):
         numpy.array: output image showing markers on each traffic
         sign.
     """
+    for key in signs_dict:
+        center = signs_dict[key]
+
+        font      = cv2.FONT_HERSHEY_SIMPLEX
+        center = (int(center[0]), int(center[1]))
+        testLoc   = (int(center[0] - 50), int(center[1]) - 50)
+        fontScale = 0.5
+        fontColor = (0, 0, 0)
+        lineType  = 1
+        string ="(" + str(center) + ")"
+    
+        cv2.circle(image_in, center, 2, fontColor, 2)
+        cv2.putText(image_in, string, testLoc, font, fontScale, fontColor, lineType)
+        return image_in
     raise NotImplementedError
 
 
@@ -102,20 +116,15 @@ def part_1():
 
 def part_2():
 
-    # input_images = ['scene_dne_1', 'scene_stp_1', 'scene_constr_1',
-    #                 'scene_wrng_1', 'scene_yld_1']
+    input_images = ['scene_dne_1', 'scene_stp_1', 'scene_constr_1',
+                    'scene_wrng_1', 'scene_yld_1']
 
-    # output_labels = ['ps2-2-a-1', 'ps2-2-a-2', '', 'ps2-2-a-4',
-    #                  'ps2-2-a-5']
+    output_labels = ['ps2-2-a-1', 'ps2-2-a-2', 'ps2-2-a-3', 'ps2-2-a-4',
+                     'ps2-2-a-5']
 
-    # sign_fns = [ps2.do_not_enter_sign_detection, ps2.stop_sign_detection,
-    #             ps2.construction_sign_detection, ps2.warning_sign_detection,
-    #             ps2.yield_sign_detection]
-
-    input_images = ['scene_yld_1']
-
-    output_labels = ['ps2-2-a-5']
-    sign_fns = [ps2.yield_sign_detection]
+    sign_fns = [ps2.do_not_enter_sign_detection, ps2.stop_sign_detection,
+                ps2.construction_sign_detection, ps2.warning_sign_detection,
+                ps2.yield_sign_detection]
 
     sign_labels = ['no_entry', 'stop', 'construction', 'warning', 'yield']
 
@@ -125,9 +134,9 @@ def part_2():
         sign_img = cv2.imread("input_images/{}.png".format(img_in))
         coords = fn(sign_img)
 
-        # temp_dict = {name: coords}
-        # img_out = mark_traffic_signs(sign_img, temp_dict)
-        # cv2.imwrite("output/{}.png".format(label), img_out)
+        temp_dict = {name: coords}
+        img_out = mark_traffic_signs(sign_img, temp_dict)
+        cv2.imwrite("output/{}.png".format(label), img_out)
 
 
 def part_3():
