@@ -41,7 +41,7 @@ def draw_tl_center(image_in, center, state):
     font      = cv2.FONT_HERSHEY_SIMPLEX
     center = (int(center[0]), int(center[1]))
     testLoc   = (int(center[0] + 50), int(center[1]))
-    fontScale = 0.4
+    fontScale = 0.3
     fontColor = (0, 0, 0)
     lineType  = 1
     string ="(" + str(center) + ', ' +str(state) + ")"
@@ -80,15 +80,15 @@ def mark_traffic_signs(image_in, signs_dict):
 
         font      = cv2.FONT_HERSHEY_SIMPLEX
         center = (int(center[0]), int(center[1]))
-        testLoc   = (int(center[0] - 50), int(center[1]) - 50)
-        fontScale = 0.5
+        testLoc   = (int(center[0] - 100), int(center[1]) - 50)
+        fontScale = 0.3
         fontColor = (0, 0, 0)
         lineType  = 1
-        string ="(" + str(center) + ")"
+        string ="(" + str(center) + key +")"
     
         cv2.circle(image_in, center, 2, fontColor, 2)
         cv2.putText(image_in, string, testLoc, font, fontScale, fontColor, lineType)
-        return image_in
+    return image_in
     raise NotImplementedError
 
 
@@ -157,6 +157,9 @@ def part_4():
     input_images = ['scene_some_signs_noisy', 'scene_all_signs_noisy']
     output_labels = ['ps2-4-a-1', 'ps2-4-a-2']
 
+    # input_images = ['scene_some_signs_noisy']
+    # output_labels = ['ps2-4-a-1']
+
     for img_in, label in zip(input_images, output_labels):
         scene = cv2.imread("input_images/{}.png".format(img_in))
         coords = ps2.traffic_sign_detection_noisy(scene)
@@ -191,8 +194,8 @@ def part_5b():
 if __name__ == '__main__':
     part_1()
     part_2()
-    # part_3()
-    # part_4()
+    part_3()
+    part_4()
     # part_5a()
     # part_5b()
     cv2.waitKey(0)

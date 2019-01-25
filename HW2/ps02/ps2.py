@@ -79,7 +79,7 @@ def traffic_light_detection(img_in, radii_range):
     thresh2 = 60
     cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
 
-    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT,1,20, param1=50,param2=30,minRadius=0,maxRadius=0)
+    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=30,minRadius=0,maxRadius=0)
     circles_selected = select_three(circles)
 
     for circle in circles_selected:
@@ -148,6 +148,7 @@ def yield_sign_detection(img_in):
     line3 = Line_list_M60[index[-1]].line
     # cv2.line(img_in,(line3[0],line3[1]), (line3[2], line3[3]),(255, 0, 0), 3)
 
+    # cv2.show('test', img_in)
     X_60 = max(line1[0], line1[2])
     X_M60 = min(line3[0], line3[2])
     column = int ((X_60 + X_M60)/2)
@@ -159,11 +160,30 @@ def yield_sign_detection(img_in):
     row = int ((left_Y + (mid_Y_60+mid_Y_M60)/2 + right_Y)/3)
     coordinates = (column, row)
 
-    cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
-    # cv2.imshow('detected lines',img_in)
-    return coordinates
+    pixels = img_in[row, column, :]
+    if pixels[0] > 220 and pixels[1] > 220 and pixels[2] > 220 :
+        # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
+        return coordinates
+    else:
+        return None
+
+
     raise NotImplementedError
 
+
+def RedSide(img_in,line_instance):
+    r ,c , channel = img_in.shape
+    col_1 = int (line_instance.mid[0] + 10)
+    row_1 = int (line_instance.mid[1] + 10)
+    col_2 = int (line_instance.mid[0] - 10)
+    row_2 = int (line_instance.mid[1] - 10)
+
+    if col_1 < c and row_1 < r and ((img_in[row_1, col_1, 0] <20 and img_in[row_1, col_1, 1]<20) or \
+                                               (img_in[row_2, col_2, 0]<20 and img_in[row_2, col_2, 1]<20)) :
+        return True
+    else:
+        return False
+    return True
 
 def stop_sign_detection(img_in):
     """Finds the centroid coordinates of a stop sign in the provided
@@ -190,43 +210,55 @@ def stop_sign_detection(img_in):
     for line in lines:
         line =  line.flatten()
         line_instance = Line(line)
-        if line_instance.length < 500 and line_instance.angle != 0 :
-            Line_list.append(line_instance) 
-            # cv2.line(img_in,(line[0],line[1]), (line[2], line[3]),(255, 0, 0), 3)
+        if line_instance.length < 500 and line_instance.angle != 0 and RedSide(img_in,line_instance):
+            Line_list.append(line_instance)
             Angle_45.append(np.abs(line_instance.angle - 45))
             Angle_M45.append(np.abs(line_instance.angle + 45))
 
+    if len(Angle_45) == 0:
+        return None
         
-    index = np.argsort(Angle_45)
-    line1 = Line_list[index[0]]
-    line2 = Line_list[index[1]]
+    # index = np.argsort(Angle_45)
+    # line1 = Line_list[index[0]]
+    # line2 = Line_list[index[1]]
 
     index = np.argsort(Angle_M45)
-    line3 = Line_list[index[0]]
-    line4 = Line_list[index[1]]
-
+    line1 = Line_list[index[0]]
+    line2 = Line_list[index[1]]
+    #Mark the line we use to determine the center
     # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
     # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
-    # cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
-    # cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
 
     column45 = int((line1.mid[0] + line2.mid[0])/2)
     row45 = int((line1.mid[1] + line2.mid[1])/2)
 
-    columnM45 = int((line3.mid[0] + line4.mid[0])/2)
-    rowM45 = int((line3.mid[1] + line4.mid[1])/2)
+    # columnM45 = int((line3.mid[0] + line4.mid[0])/2)
+    # rowM45 = int((line3.mid[1] + line4.mid[1])/2)
 
-    column = (column45 + columnM45)//2 + 1
-    row = (row45 + rowM45)//2 + 1
-    coordinates = (column, row)
+    # column = (column45 + columnM45)//2 + 1
+    # row = (row45 + rowM45)//2 + 1
+    coordinates = (column45, row45)
 
-    cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
+    # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
     # cv2.imshow('detected lines',img_in)
-
 
     return coordinates
     raise NotImplementedError
 
+def WarnSide(img_in,line_instance):
+    r ,c , channel = img_in.shape
+    col_1 = int (line_instance.mid[0] + 3)
+    row_1 = int (line_instance.mid[1] + 3)
+    col_2 = int (line_instance.mid[0] - 3)
+    row_2 = int (line_instance.mid[1] - 3)
+
+    if col_1 < c and row_1 < r and \
+            ((img_in[row_1, col_1, 0] < 20 and img_in[row_1, col_1, 1] >230 and img_in[row_1, col_1, 2]>230) or \
+            (img_in[row_2, col_2, 0] < 20 and img_in[row_2, col_2, 1] >230 and img_in[row_2, col_2, 2]>230)) :
+        return True
+    else:
+        return False
+    return True
 
 def warning_sign_detection(img_in):
     """Finds the centroid coordinates of a warning sign in the
@@ -253,13 +285,17 @@ def warning_sign_detection(img_in):
     for line in lines:
         line =  line.flatten()
         line_instance = Line(line)
-        if line_instance.length < 500 and line_instance.angle != 0 :
+        if line_instance.length < 500 and line_instance.angle != 0 and WarnSide(img_in,line_instance):
             Line_list.append(line_instance) 
-            # cv2.line(img_in,(line[0],line[1]), (line[2], line[3]),(255, 0, 0), 1)
+            # cv2.line(img_in,(line[0],line[1]), (line[2], line[3]),(255, 0, 0), 2)
             Angle_45.append(np.abs(line_instance.angle - 45))
             Angle_M45.append(np.abs(line_instance.angle + 45))
 
-        
+    if len(Angle_45) == 0:
+        return None
+    if len(Angle_M45) == 0:
+        return None
+
     index = np.argsort(Angle_45)
     line1 = Line_list[index[0]]
     line2 = Line_list[index[1]]
@@ -267,6 +303,11 @@ def warning_sign_detection(img_in):
     index = np.argsort(Angle_M45)
     line3 = Line_list[index[0]]
     line4 = Line_list[index[1]]
+
+    # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
 
     column45 = int((line1.mid[0] + line2.mid[0])/2)
     row45 = int((line1.mid[1] + line2.mid[1])/2)
@@ -277,13 +318,27 @@ def warning_sign_detection(img_in):
     column = (column45 + columnM45)//2 + 1
     row = (row45 + rowM45)//2 + 1
     coordinates = (column, row)
-
-    cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
+    # print(img_in[row, column, :])
+    # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
     # cv2.imshow('detected lines',img_in)
 
     return coordinates
     raise NotImplementedError
 
+def ConsSide(img_in,line_instance):
+    r ,c , channel = img_in.shape
+    col_1 = int (line_instance.mid[0] + 10)
+    row_1 = int (line_instance.mid[1] + 10)
+    col_2 = int (line_instance.mid[0] - 10)
+    row_2 = int (line_instance.mid[1] - 10)
+
+    if col_1 < c and row_1 < r and \
+            ((img_in[row_1, col_1, 0]<20 and img_in[row_1, col_1, 1]>108 and img_in[row_1, col_1, 1]<148 and img_in[row_1, col_1, 2]>230) or \
+            (img_in[row_2, col_2, 0]<20 and img_in[row_2, col_2, 1]>108 and img_in[row_2, col_2, 1]<148 and img_in[row_2, col_2, 2]>230) ) :
+        return True
+    else:
+        return False
+    return True
 
 def construction_sign_detection(img_in):
     """Finds the centroid coordinates of a construction sign in the
@@ -310,13 +365,17 @@ def construction_sign_detection(img_in):
     for line in lines:
         line =  line.flatten()
         line_instance = Line(line)
-        if line_instance.length < 500 and line_instance.angle != 0 :
+        if line_instance.length < 500 and line_instance.angle != 0 and ConsSide(img_in,line_instance):
             Line_list.append(line_instance) 
             # cv2.line(img_in,(line[0],line[1]), (line[2], line[3]),(255, 0, 0), 3)
             Angle_45.append(np.abs(line_instance.angle - 45))
             Angle_M45.append(np.abs(line_instance.angle + 45))
 
-        
+    if len(Angle_45) == 0:
+        return None
+    if len(Angle_M45) == 0:
+        return None
+
     index = np.argsort(Angle_45)
     line1 = Line_list[index[0]]
     line2 = Line_list[index[1]]
@@ -333,18 +392,16 @@ def construction_sign_detection(img_in):
 
     # print(line1.line, line1.angle, line1.length)
     # print(line3.line, line3.angle, line3.length)
-    # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
-    # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
-    # cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
-    # cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
+    cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
+    cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
+    cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
+    cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
 
     column = (column45 + columnM45)//2 + 1
     row = (row45 + rowM45)//2 + 1
     coordinates = (column, row)
 
-    cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
-    # cv2.imshow('detected lines',img_in)
-
+    # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
     return coordinates
     raise NotImplementedError
 
@@ -366,14 +423,13 @@ def do_not_enter_sign_detection(img_in):
 
     circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT,1,20, param1=50,param2=30,minRadius=0,maxRadius=0)
     for circle in circles[0, :]:
-        cv2.circle(img_in, (circle[0], circle[1]), circle[2], (255, 0, 0), 2)
-
+        #cv2.circle(img_in, (circle[0], circle[1]), circle[2], (255, 0, 0), 2)
         column = circle[0]
         row = circle[1]
         coordinates = (column, row)
         state_pixels = img_in[int(row), int(column), :]
         if state_pixels[0] == 255 and state_pixels[1] == 255 and state_pixels[2] == 255 :
-            cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
+            # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
             # cv2.imshow("mark", img_in)
             return coordinates
 
@@ -409,14 +465,74 @@ def traffic_sign_detection(img_in):
               These are just example values and may not represent a
               valid scene.
     """
+    raw_img = np.copy(img_in)
+    DetectedObj = {}
 
-    radii_range = range(10, 30, 1)
-    coords, state = traffic_light_detection(img_in, radii_range)
-    img_out = draw_tl_center(tl, coords, state)
-    return  img_in
+    ###################################  
+    ### Detecting the traffic light ###
+    ###################################  
 
+    thresh1 = 110
+    thresh2 = 60
+    cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
+
+    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=30,minRadius=0,maxRadius=50)
+    circles_selected = select_three(circles)
+    print(circles_selected)
+    if circles_selected != None:
+        column = circles_selected[1][0]
+        row = circles_selected[1][1]
+        coordinates = (column, row)
+        DetectedObj['Traffic_Sign'] = coordinates
+        #cv2.circle(img_in, (circle[0], circle[1]), circle[2], (255, 0, 0), 2)
+
+
+    ###################################  
+    ### Detecting the No_Entry sign ###
+    ###################################  
+
+    for circle in circles[0, :]:
+        column = circle[0]
+        row = circle[1]
+        coordinates = (column, row)
+        state_pixels = img_in[int(row), int(column), :]
+        if state_pixels[0] > 230 and state_pixels[1] > 230 and state_pixels[2] > 230 :
+            DetectedObj['No_Entry'] = coordinates
+
+    #################################  
+    ### Detecting the Yield sign  ###
+    #################################
+
+    coordinates = yield_sign_detection(img_in)
+    if coordinates != None:
+        DetectedObj['Yield'] = coordinates
+
+    #################################  
+    ### Detecting the Stop  sign  ###
+    #################################
+
+    coordinates = stop_sign_detection(img_in)
+    if coordinates != None:
+        DetectedObj['Stop'] = coordinates
+
+    #################################  
+    ### Detecting the Construction###
+    #################################
+
+    coordinates = construction_sign_detection(img_in)
+    if coordinates != None:
+        DetectedObj['Construction'] = coordinates
+
+    #################################  
+    ### Detecting the Warning_Sign###
+    #################################
+
+    coordinates = warning_sign_detection(img_in)
+    if coordinates != None:
+        DetectedObj['Warning_Sign'] = coordinates
+
+    return DetectedObj
     raise NotImplementedError
-
 
 def traffic_sign_detection_noisy(img_in):
     """Finds all traffic signs in a synthetic noisy image.
@@ -447,6 +563,21 @@ def traffic_sign_detection_noisy(img_in):
               These are just example values and may not represent a
               valid scene.
     """
+    filter_size = 5
+    filter_sigma = 4
+    filter_kernel = cv2.getGaussianKernel(filter_size, filter_sigma)
+    filter_kernel = filter_kernel * filter_kernel.T
+    img_in = cv2.filter2D(img_in, -1, filter_kernel)
+
+    thresh1 = 110
+    thresh2 = 60
+    cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
+    # cv2.imshow('smoothed_img', img_in)
+    # cv2.imshow('cannyEdges', cannyEdges)
+
+    DetectedObj = traffic_sign_detection(img_in)
+
+    return DetectedObj
     raise NotImplementedError
 
 
