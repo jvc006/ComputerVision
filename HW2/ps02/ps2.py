@@ -25,18 +25,9 @@ def select_three(circles) :
     for i in range(r):
         for j in range(i+1, r):
             for k in range(j+1, r):
-                if operator[i][0] == operator[j][0] and operator[j][0] == operator[k][0]:
+                if (np.abs(operator[i][0] - operator[j][0]) < 10) and (np.abs(operator[j][0] - operator[k][0]) < 10):
                     waitList = (operator[i], operator[j], operator[k])
                     temp_list = [operator[i][1], operator[j][1], operator[k][1]]
-                    sequence = np.argsort(temp_list)
-                    a, b, c = sequence[0], sequence[1], sequence[2]
-                    circles_selected.append(waitList[a])
-                    circles_selected.append(waitList[b])
-                    circles_selected.append(waitList[c])
-                    return circles_selected
-                if operator[i][1] == operator[j][1] and operator[j][0] == operator[k][1]:
-                    waitList = (operator[i], operator[j], operator[k])
-                    temp_list = [operator[i][0], operator[j][0], operator[k][0]]
                     sequence = np.argsort(temp_list)
                     a, b, c = sequence[0], sequence[1], sequence[2]
                     circles_selected.append(waitList[a])
@@ -178,8 +169,8 @@ def RedSide(img_in,line_instance):
     col_2 = int (line_instance.mid[0] - 10)
     row_2 = int (line_instance.mid[1] - 10)
 
-    if col_1 < c and row_1 < r and ((img_in[row_1, col_1, 0] <20 and img_in[row_1, col_1, 1]<20) or \
-                                               (img_in[row_2, col_2, 0]<20 and img_in[row_2, col_2, 1]<20)) :
+    if col_1 < c and row_1 < r and ((img_in[row_1, col_1, 0] <15 and img_in[row_1, col_1, 1]<15) or \
+                                               (img_in[row_2, col_2, 0]<15 and img_in[row_2, col_2, 1]<15)) :
         return True
     else:
         return False
@@ -215,7 +206,9 @@ def stop_sign_detection(img_in):
             Angle_45.append(np.abs(line_instance.angle - 45))
             Angle_M45.append(np.abs(line_instance.angle + 45))
 
-    if len(Angle_45) == 0:
+    if len(Angle_45) < 2:
+        return None
+    if len(Angle_M45) < 2:
         return None
         
     # index = np.argsort(Angle_45)
@@ -225,6 +218,10 @@ def stop_sign_detection(img_in):
     index = np.argsort(Angle_M45)
     line1 = Line_list[index[0]]
     line2 = Line_list[index[1]]
+
+    if line1.angle < -50 or line1.angle > -40 or line2.angle < -50 or line2.angle > -40 :
+        return None
+
     #Mark the line we use to determine the center
     # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
     # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
@@ -291,9 +288,9 @@ def warning_sign_detection(img_in):
             Angle_45.append(np.abs(line_instance.angle - 45))
             Angle_M45.append(np.abs(line_instance.angle + 45))
 
-    if len(Angle_45) == 0:
+    if len(Angle_45) < 2:
         return None
-    if len(Angle_M45) == 0:
+    if len(Angle_M45) < 2:
         return None
 
     index = np.argsort(Angle_45)
@@ -392,10 +389,10 @@ def construction_sign_detection(img_in):
 
     # print(line1.line, line1.angle, line1.length)
     # print(line3.line, line3.angle, line3.length)
-    cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
-    cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
-    cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
-    cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line3.line[0],line3.line[1]), (line3.line[2], line3.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line4.line[0],line4.line[1]), (line4.line[2], line4.line[3]),(255, 0, 0), 3)
 
     column = (column45 + columnM45)//2 + 1
     row = (row45 + rowM45)//2 + 1
@@ -476,9 +473,9 @@ def traffic_sign_detection(img_in):
     thresh2 = 60
     cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
 
-    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=30,minRadius=0,maxRadius=50)
+    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=26,minRadius=0,maxRadius=50)
     circles_selected = select_three(circles)
-    print(circles_selected)
+
     if circles_selected != None:
         column = circles_selected[1][0]
         row = circles_selected[1][1]
