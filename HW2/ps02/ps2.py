@@ -596,21 +596,154 @@ def traffic_sign_detection_challenge(img_in):
               These are just example values and may not represent a
               valid scene.
     """
-    raise NotImplementedError
+    DetectedObj = {}
+    coordinates = RealLifeStop(img_in)
+    if coordinates != None:
+        DetectedObj['Stop'] = coordinates
+
+    coordinates = RealLifeYield(img_in)
+    if coordinates != None:
+        DetectedObj['Yield'] = coordinates
+
+    coordinates = RealLifeLight(img_in)
+    if coordinates != None:
+        DetectedObj['Traffic_Light'] = coordinates
+
+    return DetectedObj
+    raise NotImplemenedError
 
 
 
 
-    # lines = cv2.HoughLinesP(
-    # cannyEdges,
-    # rho=6,
-    # theta=np.pi / 60,
-    # threshold=160,
-    # lines=np.array([]),
-    # minLineLength=40,
-    # maxLineGap=25
-    # )
-    # for line in lines:
-    #     line =  line.flatten()
-    #     cv2.line(cannyEdges,(line[0],line[1]), (line[2], line[3]),(255, 0, 0), 3)
-    # cv2.imshow('detected circles',cannyEdges)
+def RealLifeStop(img_in) :
+    thresh1 = 1210
+    thresh2 = 400
+    cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
+    # cv2.imshow("test", cannyEdges)
+
+    lines = cv2.HoughLinesP(cannyEdges, rho=1, theta=np.pi /90, threshold=20, minLineLength=27, maxLineGap=1)
+
+    if lines is None:
+        return None
+
+    Line_list = []
+    Angle_45 = []
+    Angle_M45 = []
+
+    for line in lines:
+        line =  line.flatten()
+        line_instance = Line(line)
+        if line_instance.length < 500 and line_instance.angle != 0 and RedSide(img_in,line_instance):
+            # cv2.line(img_in,(line_instance.line[0],line_instance.line[1]), (line_instance.line[2], line_instance.line[3]),(255, 0, 0), 3)
+            Line_list.append(line_instance)
+            Angle_45.append(np.abs(line_instance.angle - 45))
+            Angle_M45.append(np.abs(line_instance.angle + 45))
+
+    if len(Angle_45) < 2:
+        return None
+    if len(Angle_M45) < 2:
+        return None
+
+    index = np.argsort(Angle_M45)
+    line1 = Line_list[index[0]]
+    line2 = Line_list[index[1]]
+
+    if line1.angle < -50 or line1.angle > -40 or line2.angle < -50 or line2.angle > -40 :
+        return None
+
+    # cv2.line(img_in,(line1.line[0],line1.line[1]), (line1.line[2], line1.line[3]),(255, 0, 0), 3)
+    # cv2.line(img_in,(line2.line[0],line2.line[1]), (line2.line[2], line2.line[3]),(255, 0, 0), 3)
+
+    column45 = int((line1.mid[0] + line2.mid[0])/2)
+    row45 = int((line1.mid[1] + line2.mid[1])/2)
+
+    coordinates = (column45, row45)
+    return coordinates
+
+def RealLifeYield(img_in):
+
+    thresh1 = 1210
+    thresh2 = 400
+    cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
+    # cv2.imshow("test", cannyEdges)
+
+    lines = cv2.HoughLinesP(cannyEdges, rho=1, theta=np.pi /90, threshold=30, minLineLength=20, maxLineGap=1)
+
+    if lines is None:
+        return None
+
+    Line_list_60 = []
+    Line_list_M60 = []
+    Angle_60 = []
+    Angle_M60 = []
+
+    for line in lines:
+        line =  line.flatten()
+        line_instance = Line(line)
+
+        if line_instance.angle > 35 and line_instance.angle < 85:   
+            # print(line_instance.line, line_instance.angle)
+            Angle_60.append(line_instance.length)
+            Line_list_60.append(line_instance)
+
+        if line_instance.angle > -85 and line_instance.angle < -35:  
+            # print(line_instance.line, line_instance.angle) 
+            Angle_M60.append(line_instance.length)
+            Line_list_M60.append(line_instance)
+        
+    index = np.argsort(Angle_60)
+    line1 = Line_list_60[index[-1]].line
+    # cv2.line(img_in,(line1[0],line1[1]), (line1[2], line1[3]),(255, 0, 0), 3)
+
+    index = np.argsort(Angle_M60)
+    line3 = Line_list_M60[index[-1]].line
+    # cv2.line(img_in,(line3[0],line3[1]), (line3[2], line3[3]),(255, 0, 0), 3)
+
+    # cv2.show('test', img_in)
+    X_60 = max(line1[0], line1[2])
+    X_M60 = min(line3[0], line3[2])
+    column = int ((X_60 + X_M60)/2)
+
+    left_Y = min(line1[1], line1[3])
+    mid_Y_60 = max(line1[1], line1[3])
+    mid_Y_M60 = max(line3[1], line3[3])
+    right_Y = min(line3[1], line3[3])
+    row = int ((left_Y + (mid_Y_60+mid_Y_M60)/2 + right_Y)/3)
+    coordinates = (column, row)
+
+
+    pixels = img_in[row, column, :]
+    if pixels[0] > 160 and pixels[1] > 160 and pixels[2] > 160 :
+        # cv2.circle(img_in, coordinates, 2, (255, 0, 0), 2)
+        return coordinates
+    else:
+        return None
+
+def RealLifeLight(img_in):
+    thresh1 = 600
+    thresh2 = 200
+    cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
+
+    circles = cv2.HoughCircles(cannyEdges,cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=30,minRadius=20,maxRadius=80)
+
+    if circles is None:
+        return None
+    elif len(circles[0, :]) <= 3:
+        return None
+
+    circles_selected = select_three(circles)
+
+    if circles_selected is None:
+        return None
+
+    for circle in circles_selected:
+        cv2.circle(img_in, (circle[0], circle[1]), circle[2],(255, 0, 0), 2)
+
+    column_2 = circles_selected[1][0]
+    row_2 = circles_selected[1][1]
+    coordinates = (column_2, row_2)
+
+    return coordinates
+
+
+
