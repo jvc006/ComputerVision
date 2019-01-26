@@ -40,8 +40,8 @@ def draw_tl_center(image_in, center, state):
     """
     font      = cv2.FONT_HERSHEY_SIMPLEX
     center = (int(center[0]), int(center[1]))
-    testLoc   = (int(center[0] + 50), int(center[1]))
-    fontScale = 0.3
+    testLoc   = (int(center[0] + 30), int(center[1]))
+    fontScale = 0.5
     fontColor = (0, 0, 0)
     lineType  = 1
     string ="(" + str(center) + ', ' +str(state) + ")"
@@ -80,7 +80,7 @@ def mark_traffic_signs(image_in, signs_dict):
 
         font      = cv2.FONT_HERSHEY_SIMPLEX
         center = (int(center[0]), int(center[1]))
-        testLoc   = (int(center[0] - 100), int(center[1]) - 50)
+        testLoc   = (int(center[0] - 50), int(center[1]) - 80)
         fontScale = 0.3
         fontColor = (0, 0, 0)
         lineType  = 1
