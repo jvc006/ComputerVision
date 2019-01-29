@@ -11,3 +11,4 @@ See this assignment's google doc and piazza post.
 
 1. Finish the first 4 parts, propare photos for part 5.
 2. Finish part 5(a), 5(b) seems very hard to predict accurate resutls.
+3. 5(b) results are not good
