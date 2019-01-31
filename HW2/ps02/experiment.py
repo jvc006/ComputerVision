@@ -38,7 +38,7 @@ def draw_tl_center(image_in, center, state):
         traffic light center and text that presents the numerical
         coordinates with the traffic light state.
     """
-    font      = cv2.FONT_HERSHEY_SIMPLEX
+    font      = cv2.LINE_AA
     center = (int(center[0]), int(center[1]))
     testLoc   = (int(center[0] + 30), int(center[1]))
     fontScale = 0.5
@@ -78,7 +78,7 @@ def mark_traffic_signs(image_in, signs_dict):
     for key in signs_dict:
         center = signs_dict[key]
 
-        font      = cv2.FONT_HERSHEY_SIMPLEX
+        font      = cv2.LINE_AA
         center = (int(center[0]), int(center[1]))
         testLoc   = (int(center[0] - 80), int(center[1]) + 50)
         fontScale = 0.4
@@ -200,5 +200,4 @@ if __name__ == '__main__':
     part_3()
     part_4()
     part_5a()
-    # part_5b()
-    cv2.waitKey(0)
+    part_5b()

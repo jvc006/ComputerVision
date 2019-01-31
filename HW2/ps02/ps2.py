@@ -616,8 +616,8 @@ def traffic_sign_detection_challenge(img_in):
 
 
 def RealLifeStop(img_in) :
-    thresh1 = 1210
-    thresh2 = 400
+    thresh1 = 400
+    thresh2 = 100
     cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
     # cv2.imshow("test", cannyEdges)
 
@@ -663,7 +663,7 @@ def RealLifeStop(img_in) :
 def RealLifeYield(img_in):
 
     thresh1 = 1210
-    thresh2 = 400
+    thresh2 = 300
     cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
     # cv2.imshow("test", cannyEdges)
 
@@ -691,6 +691,11 @@ def RealLifeYield(img_in):
             Angle_M60.append(line_instance.length)
             Line_list_M60.append(line_instance)
         
+    if len(Angle_60) < 1:
+        return None
+    if len(Angle_M60) < 1:
+        return None
+
     index = np.argsort(Angle_60)
     line1 = Line_list_60[index[-1]].line
     # cv2.line(img_in,(line1[0],line1[1]), (line1[2], line1[3]),(255, 0, 0), 3)
@@ -720,7 +725,7 @@ def RealLifeYield(img_in):
         return None
 
 def RealLifeLight(img_in):
-    thresh1 = 600
+    thresh1 = 390
     thresh2 = 200
     cannyEdges = cv2.Canny(img_in, thresh1, thresh2)
 
@@ -736,8 +741,8 @@ def RealLifeLight(img_in):
     if circles_selected is None:
         return None
 
-    for circle in circles_selected:
-        cv2.circle(img_in, (circle[0], circle[1]), circle[2],(255, 0, 0), 2)
+    # for circle in circles_selected:
+    #     cv2.circle(img_in, (circle[0], circle[1]), circle[2],(255, 0, 0), 2)
 
     column_2 = circles_selected[1][0]
     row_2 = circles_selected[1][1]
