@@ -141,7 +141,8 @@ def part_2():
                     'ps3-2-c_base.jpg', 'ps3-2-d_base.jpg', 'ps3-2-e_base.jpg']
     output_images = ['ps3-2-a-1.png', 'ps3-2-a-2.png', 'ps3-2-a-3.png',
                      'ps3-2-a-4.png', 'ps3-2-a-5.png']
-
+    # input_images = ['ps3-3-c_base.jpg']
+    # output_images = ['ps3-3-c_base_test.png']
 
     # Optional template image
     template = cv2.imread(os.path.join(IMG_DIR, "template.jpg"))
@@ -276,7 +277,7 @@ if __name__ == '__main__':
     part_1()
     part_2()
     part_3()
-    # part_4_a()
+    part_4_a()
     # part_4_b()
     # part_5_a()
     # part_5_b()

@@ -66,16 +66,59 @@ def find_markers(image, template=None):
     h, w = template[:,:,0].shape
     H, W = image[:, :, 0].shape
 
+    # M = [[ np.cos(-np.pi/7.5), -np.sin(-np.pi/7.5)],
+    #      [ np.sin(-np.pi/7.5),  np.cos(-np.pi/7.5)]]
+
+    rotated45 = np.copy(template)
+    rotated45[:, :, :] = 255
+
+    # for x in range(w):
+    #     for y in range(h):
+    #         X = int(x - w/2)
+    #         Y = int(y - h/2)
+    #         if X**2 + Y**2 < 16**2 : 
+    #             src_points =  np.array([X, Y])
+    #             dst_points = np.matmul(M, src_points)
+
+    #             locX = int(dst_points[0] + w/2)
+    #             locY = int(dst_points[1] + h/2)
+    #             rotated45[locY, locX, :] = template[y, x, :]
+
+    for x in range(w):
+        for y in range(h):
+            X = int(x - w/2)
+            Y = int(y - h/2)
+            if (Y < 0 and (1.5*X) > (Y)  and (0.3*X) < (-Y) and X**2 + Y**2 <= 15**2) \
+                                    or (Y > 0 and (1.5*X) < (Y) and (0.3*X) > (-Y) and X**2 + Y**2 <= 15**2): 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotated45[locY, locX, :] = [0, 0, 0]
+            if X**2 + Y**2 < 15.5**2 and X**2 + Y**2 > 14.5**2: 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotated45[locY, locX, :] = [0, 0, 0]
+
     rotatedTemp = np.copy(template)
     for c in range(3):
         rotatedTemp[:, :, c] = np.rot90(rotatedTemp[:, :, c])
 
     MatchedImage = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
     MatchedImageR = cv2.matchTemplate(image, rotatedTemp, cv2.TM_CCOEFF_NORMED)
-
+    MatchedImage45 = cv2.matchTemplate(image, rotated45, cv2.TM_CCOEFF_NORMED)
 
     if MatchedImageR.max() > MatchedImage.max():
         MatchedImage = MatchedImageR
+
+    if MatchedImage45.max() > MatchedImage.max():
+        MatchedImage = MatchedImage45
+
+    # flat45 = MatchedImage45.flatten()
+    # flat45.sort()
+    # flat = MatchedImage.flatten()
+    # flat.sort()
+
+    # print(flat45[-4:])
+    # print(flat[-4:])
 
     locs = []
 
@@ -137,18 +180,20 @@ def project_imageA_onto_imageB(imageA, imageB, homography):
         numpy.array: combined image
     """
     h, w = imageA[:, :, 0].shape
+    H, W = imageB[:, :, 0].shape
     for x in range(w):
         for y in range(h):
             src_points =  np.array([x, y, 1])
             dst_points = np.matmul(homography, src_points)
-            dst_points =  dst_points/dst_points[2]
+            if dst_points[2] != 0:
+                dst_points =  dst_points/dst_points[2]
+            else:
+                dst_points =  dst_points/0.0001
 
             locX = int(dst_points[0])
             locY = int(dst_points[1])
-
-            imageB[locY, locX, 0] = imageA[y, x, 0]
-            imageB[locY, locX, 1] = imageA[y, x, 1]
-            imageB[locY, locX, 2] = imageA[y, x, 2]
+            if locX < W and locY < H and locX >= 0 and locY >= 0:
+                imageB[locY, locX, :] = imageA[y, x, :]
 
     return imageB
 
@@ -203,7 +248,7 @@ def video_frame_generator(filename):
         None.
     """
     # Todo: Open file with VideoCapture and set result to 'video'. Replace None
-    video = None
+    video = cv2.VideoCapture(filename)
 
     # Do not edit this while loop
     while video.isOpened():
@@ -215,4 +260,10 @@ def video_frame_generator(filename):
             break
 
     # Todo: Close video (release) and yield a 'None' value. (add 2 lines)
+    video.release()
+    yield None
+
     raise NotImplementedError
+
+
+
