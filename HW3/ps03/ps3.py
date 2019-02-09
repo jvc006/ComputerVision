@@ -32,7 +32,19 @@ def get_corners_list(image):
         list: List of four (x, y) tuples
             in the order [top-left, bottom-left, top-right, bottom-right].
     """
+    h = image.shape[0]
+    w = image.shape[1]
 
+    loc = []
+    top_left = (0, 0)
+    bottom_left = (0, h-1)
+    top_right = (w-1, 0)
+    bottom_right = (w-1, h-1)
+    loc.append(top_left)
+    loc.append(bottom_left)
+    loc.append(top_right)
+    loc.append(bottom_right)
+    return loc
     raise NotImplementedError
 
 
@@ -60,6 +72,7 @@ def find_markers(image, template=None):
 
     MatchedImage = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
     MatchedImageR = cv2.matchTemplate(image, rotatedTemp, cv2.TM_CCOEFF_NORMED)
+
 
     if MatchedImageR.max() > MatchedImage.max():
         MatchedImage = MatchedImageR
@@ -123,6 +136,21 @@ def project_imageA_onto_imageB(imageA, imageB, homography):
     Returns:
         numpy.array: combined image
     """
+    h, w = imageA[:, :, 0].shape
+    for x in range(w):
+        for y in range(h):
+            src_points =  np.array([x, y, 1])
+            dst_points = np.matmul(homography, src_points)
+            dst_points =  dst_points/dst_points[2]
+
+            locX = int(dst_points[0])
+            locY = int(dst_points[1])
+
+            imageB[locY, locX, 0] = imageA[y, x, 0]
+            imageB[locY, locX, 1] = imageA[y, x, 1]
+            imageB[locY, locX, 2] = imageA[y, x, 2]
+
+    return imageB
 
     raise NotImplementedError
 
@@ -146,6 +174,19 @@ def find_four_point_transform(src_points, dst_points):
     Returns:
         numpy.array: 3 by 3 homography matrix of floating point values.
     """
+
+    M = []
+    n = len(src_points)
+    for i in range(n):
+        x, y = src_points[i][0], src_points[i][1]
+        u, v = dst_points[i][0], dst_points[i][1]
+        M.append([x, y, 1, 0, 0, 0, -u*x, -u*y, -u])
+        M.append([0, 0, 0, x, y, 1, -v*x, -v*y, -v])
+    M = np.asarray(M)
+    U, Sigma, Vt = np.linalg.svd(M)
+    L = Vt[-1, :]/Vt[-1, -1]
+    res = L.reshape(3, 3)
+    return res
 
     raise NotImplementedError
 
