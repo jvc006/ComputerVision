@@ -7,6 +7,7 @@ implementation and output images so you can verify your results.
 import os
 import cv2
 import numpy as np
+# import time
 
 import ps3
 
@@ -45,11 +46,18 @@ def helper_for_part_4_and_5(video_name, fps, frame_ids, output_prefix,
 
         print("Processing fame {}".format(frame_num))
 
+        # start_time = time.time()
         markers = ps3.find_markers(image, template)
+        # elapsed_time = time.time() - start_time
+        # print("FindMarkers : ", elapsed_time)
 
         if is_part5:
             homography = ps3.find_four_point_transform(src_points, markers)
+
+            # start_time = time.time()
             image = ps3.project_imageA_onto_imageB(advert, image, homography)
+            # elapsed_time = time.time() - start_time
+            # print("Project : ", elapsed_time)
 
         else:
             
@@ -114,6 +122,9 @@ def part_1():
     input_images = ['sim_clear_scene.jpg', 'sim_noisy_scene_1.jpg',
                     'sim_noisy_scene_2.jpg']
     output_images = ['ps3-1-a-1.png', 'ps3-1-a-2.png', 'ps3-1-a-3.png']
+
+    # input_images = ['sim_noisy_scene_1.jpg']
+    # output_images = ['ps3-1-a-2.png']
 
     # Optional template image
     template = cv2.imread(os.path.join(IMG_DIR, "template.jpg"))
@@ -223,7 +234,6 @@ def part_4_b():
 
     helper_for_part_4_and_5(video_file, fps, frame_ids, "ps3-4-b", 4, False)
 
-
 def part_5_a():
 
     print("\nPart 5a:")
@@ -273,14 +283,13 @@ def part_6():
 if __name__ == '__main__':
     print("--- Problem Set 3 ---")
     # Comment out the sections you want to skip
-
     part_1()
     part_2()
     part_3()
     part_4_a()
-    # part_4_b()
-    # part_5_a()
-    # part_5_b()
+    part_4_b()
+    part_5_a()
+    part_5_b()
     # part_6()
 
     cv2.waitKey(0)

@@ -3,6 +3,7 @@ CS6476 Problem Set 3 imports. Only Numpy and cv2 are allowed.
 """
 import cv2
 import numpy as np
+import time
 
 
 def euclidean_distance(p0, p1):
@@ -66,51 +67,117 @@ def find_markers(image, template=None):
     h, w = template[:,:,0].shape
     H, W = image[:, :, 0].shape
 
-    # M = [[ np.cos(-np.pi/7.5), -np.sin(-np.pi/7.5)],
-    #      [ np.sin(-np.pi/7.5),  np.cos(-np.pi/7.5)]]
+    # for angle in range(-45, 20, 70):
+
+    #     rotatedX = np.copy(template)
+    #     rotatedX[:, :, :] = 255
+    
+    #     M = [[ np.cos(np.pi/180 * angle), -np.sin(np.pi/180 * angle)],
+    #          [ np.sin(np.pi/180 * angle),  np.cos(np.pi/180 * angle)]]
+    
+    #     for x in range(w):
+    #         for y in range(h):
+    #             X = int(x - w/2)
+    #             Y = int(y - h/2)
+    #             if X**2 + Y**2 < 16**2 : 
+    #                 src_points =  np.array([X, Y])
+    #                 dst_points = np.matmul(M, src_points)
+    
+    #                 locX = int(dst_points[0] + w/2)
+    #                 locY = int(dst_points[1] + h/2)
+    #                 rotatedX[locY, locX, :] = template[y, x, :]
+    #                 MatchedImageX = cv2.matchTemplate(image, rotatedX, cv2.TM_CCOEFF_NORMED)
+    #                 if MatchedImageX.max() > MatchedImage.max():
+    #                     MatchedImage = MatchedImageX
+    
 
     rotated45 = np.copy(template)
     rotated45[:, :, :] = 255
 
-    # for x in range(w):
-    #     for y in range(h):
-    #         X = int(x - w/2)
-    #         Y = int(y - h/2)
-    #         if X**2 + Y**2 < 16**2 : 
-    #             src_points =  np.array([X, Y])
-    #             dst_points = np.matmul(M, src_points)
+    rotated25 = np.copy(template)
+    rotated25[:, :, :] = 255
 
-    #             locX = int(dst_points[0] + w/2)
-    #             locY = int(dst_points[1] + h/2)
-    #             rotated45[locY, locX, :] = template[y, x, :]
+    rotatedN45 = np.copy(template)
+    rotatedN45[:, :, :] = 255
+
+    rotatedN25 = np.copy(template)
+    rotatedN25[:, :, :] = 255
 
     for x in range(w):
         for y in range(h):
             X = int(x - w/2)
             Y = int(y - h/2)
-            if (Y < 0 and (1.5*X) > (Y)  and (0.3*X) < (-Y) and X**2 + Y**2 <= 15**2) \
-                                    or (Y > 0 and (1.5*X) < (Y) and (0.3*X) > (-Y) and X**2 + Y**2 <= 15**2): 
+            if (Y < 0 and (2*X) > (Y)  and (0.4*X) < (-Y) and X**2 + Y**2 <= 15**2) \
+                                    or (Y > 0 and (2*X) < (Y) and (0.4*X) > (-Y) and X**2 + Y**2 <= 15**2): 
                 locX = int(X + w/2)
                 locY = int(Y + h/2)
-                rotated45[locY, locX, :] = [0, 0, 0]
+                rotated45[locY, locX, :] = 0
             if X**2 + Y**2 < 15.5**2 and X**2 + Y**2 > 14.5**2: 
                 locX = int(X + w/2)
                 locY = int(Y + h/2)
-                rotated45[locY, locX, :] = [0, 0, 0]
+                rotated45[locY, locX, :] = 0
+
+            if (Y < 0 and (3*X) > (Y)  and (0.2*X) < (-Y) and X**2 + Y**2 <= 15**2) \
+                                    or (Y > 0 and (3*X) < (Y) and (0.2*X) > (-Y) and X**2 + Y**2 <= 15**2): 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotated25[locY, locX, :] = 0
+            if X**2 + Y**2 < 15.5**2 and X**2 + Y**2 > 14.5**2: 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotated25[locY, locX, :] = 0
+            
+            ## Get the N 45 
+            if (X < 0 and (2*X) < (-Y)  and (0.4*X) < (Y) and X**2 + Y**2 <= 15**2) \
+                                    or (X > 0 and (2*X) > (-Y) and (0.4*X) > (Y) and X**2 + Y**2 <= 15**2): 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotatedN45[locY, locX, :] = 0
+            if X**2 + Y**2 < 15.5**2 and X**2 + Y**2 > 14.5**2: 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotatedN45[locY, locX, :] = 0
+
+            if (X < 0 and (3*X) < (-Y)  and (0.2*X) < (Y) and X**2 + Y**2 <= 15**2) \
+                                    or (X > 0 and (3*X) > (-Y) and (0.2*X) > (Y) and X**2 + Y**2 <= 15**2): 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotatedN25[locY, locX, :] = 0
+            if X**2 + Y**2 < 15.5**2 and X**2 + Y**2 > 14.5**2: 
+                locX = int(X + w/2)
+                locY = int(Y + h/2)
+                rotatedN25[locY, locX, :] = 0
 
     rotatedTemp = np.copy(template)
     for c in range(3):
         rotatedTemp[:, :, c] = np.rot90(rotatedTemp[:, :, c])
 
+    # cv2.imshow('rotated45', rotated45)
+    # cv2.imshow('rotated25', rotated25)
+    # cv2.imshow('rotatedN45', rotatedN45)
+    # cv2.imshow('rotatedN25', rotatedN25)
+
     MatchedImage = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
     MatchedImageR = cv2.matchTemplate(image, rotatedTemp, cv2.TM_CCOEFF_NORMED)
     MatchedImage45 = cv2.matchTemplate(image, rotated45, cv2.TM_CCOEFF_NORMED)
+    MatchedImage25 = cv2.matchTemplate(image, rotated25, cv2.TM_CCOEFF_NORMED)
+    MatchedImageN45 = cv2.matchTemplate(image, rotatedN45, cv2.TM_CCOEFF_NORMED)
+    MatchedImageN25 = cv2.matchTemplate(image, rotatedN25, cv2.TM_CCOEFF_NORMED)
 
     if MatchedImageR.max() > MatchedImage.max():
         MatchedImage = MatchedImageR
 
     if MatchedImage45.max() > MatchedImage.max():
         MatchedImage = MatchedImage45
+
+    if MatchedImage25.max() > MatchedImage.max():
+        MatchedImage = MatchedImage25
+
+    if MatchedImageN45.max() > MatchedImage.max():
+        MatchedImage = MatchedImageN45
+
+    if MatchedImageN25.max() > MatchedImage.max():
+        MatchedImage = MatchedImageN25
 
     # flat45 = MatchedImage45.flatten()
     # flat45.sort()
@@ -181,19 +248,36 @@ def project_imageA_onto_imageB(imageA, imageB, homography):
     """
     h, w = imageA[:, :, 0].shape
     H, W = imageB[:, :, 0].shape
-    for x in range(w):
-        for y in range(h):
-            src_points =  np.array([x, y, 1])
-            dst_points = np.matmul(homography, src_points)
-            if dst_points[2] != 0:
-                dst_points =  dst_points/dst_points[2]
-            else:
-                dst_points =  dst_points/0.0001
 
-            locX = int(dst_points[0])
-            locY = int(dst_points[1])
-            if locX < W and locY < H and locX >= 0 and locY >= 0:
-                imageB[locY, locX, :] = imageA[y, x, :]
+    src_points = np.zeros((3, h*w), np.int32)
+    src_points[2, :] = 1
+    for x in range(w):
+        src_points[0, x*h : (x+1)*h] = x
+        src_points[1, x*h : (x+1)*h] = np.arange(h)
+
+    dst_points = np.matmul(homography, src_points)
+    dst_points[:,:] = dst_points[:,:]/dst_points[2,:]
+
+    x = np.array(src_points[0, :])
+    y = np.array(src_points[1, :])
+    locX = np.array(dst_points[0, :])
+    locY = np.array(dst_points[1, :])
+    locX = np.clip(locX, 0, W-1)
+    locY = np.clip(locY, 0, H-1)
+    locX = locX.astype(int)
+    locY = locY.astype(int)
+    imageB[locY,  locX, :] = imageA[y, x, :]
+
+    # start_time = time.time()
+    # for x in range(w):
+    #     for y in range(h): 
+    #         locX = int(dst_points[0, x*h + y])
+    #         locY = int(dst_points[1, x*h + y])
+    #         if locX < W and locY < H and locX >= 0 and locY >= 0:
+    #             imageB[locY,  locX, :] = imageA[y, x, :]
+
+    # elapsed_time = time.time() - start_time
+    # print("Finish : ", elapsed_time)
 
     return imageB
 
