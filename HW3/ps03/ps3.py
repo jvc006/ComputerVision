@@ -347,6 +347,7 @@ def video_frame_generator(filename):
     video.release()
     yield None
 
+
     raise NotImplementedError
 
 
