@@ -64,8 +64,14 @@ def find_markers(image, template=None):
             in the order [top-left, bottom-left, top-right, bottom-right].
     """
 
-    h, w = template[:,:,0].shape
-    H, W = image[:, :, 0].shape
+    h = template.shape[0]
+    w = template.shape[1]
+
+    H = image.shape[0]
+    W = image.shape[1]
+
+    # h, w = template[:,:,0].shape
+    # H, W = image[:, :, 0].shape
 
     # for angle in range(-45, 20, 70):
 

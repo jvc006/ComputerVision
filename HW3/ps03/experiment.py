@@ -19,6 +19,62 @@ if not os.path.isdir(OUT_DIR):
     os.makedirs(OUT_DIR)
 
 
+
+def helper_for_part_6(video_name, fps, frame_ids, output_prefix, counter_init, ad_video_name):
+
+    video = os.path.join(VID_DIR, video_name)
+    image_gen = ps3.video_frame_generator(video)
+
+    image = image_gen.__next__()
+    h, w, d = image.shape
+
+    out_path = "output/ar_{}-{}".format(output_prefix[4:], video_name)
+    video_out = mp4_video_writer(out_path, (w, h), fps)
+
+    # Optional template image
+    template = cv2.imread(os.path.join(IMG_DIR, "template.jpg"))
+
+    ad_video = os.path.join(VID_DIR, ad_video_name)
+    ad_image_gen = ps3.video_frame_generator(ad_video)
+
+    advert = ad_image_gen.__next__()
+    h_ad, w_ad, d_ad = advert.shape
+
+    src_points = ps3.get_corners_list(advert)
+    
+    output_counter = counter_init
+    frame_num = 1
+
+    while image is not None:
+
+        print("Processing fame {}".format(frame_num))
+
+        # start_time = time.time()
+        print(frame_num)
+        markers = ps3.find_markers(image, template)
+        # elapsed_time = time.time() - start_time
+        # print("FindMarkers : ", elapsed_time)
+
+        homography = ps3.find_four_point_transform(src_points, markers)
+        image = ps3.project_imageA_onto_imageB(advert, image, homography)
+
+        frame_id = frame_ids[(output_counter - 1) % 3]
+
+        if frame_num == frame_id:
+            out_str = output_prefix + "-{}.png".format(output_counter)
+            save_image(out_str, image)
+            output_counter += 1
+
+        video_out.write(image)
+
+        image = image_gen.__next__()
+        advert = ad_image_gen.__next__()
+
+        frame_num += 1
+
+    video_out.release()
+
+
 def helper_for_part_4_and_5(video_name, fps, frame_ids, output_prefix,
                             counter_init, is_part5):
 
@@ -278,7 +334,7 @@ def part_6():
     fps = 40
 
     # Todo: Complete this part on your own.
-
+    helper_for_part_6(video_file, fps, frame_ids, "ps3-6-a", 1, my_video)
 
 if __name__ == '__main__':
     print("--- Problem Set 3 ---")
@@ -290,6 +346,6 @@ if __name__ == '__main__':
     part_4_b()
     part_5_a()
     part_5_b()
-    # part_6()
+    part_6()
 
     cv2.waitKey(0)
