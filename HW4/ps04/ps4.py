@@ -272,63 +272,12 @@ def expand_image(image):
                      width.
     """
 
-    # cv2.imshow('init', image)
-
     h , w = image.shape
     H, W = 2*h, 2*w
-
     img_odd = np.zeros((H, W), dtype=np.float64)
     img_odd[0: H : 2, 0 : W : 2]= image[:,:]
-    temp_odd = np.array([[0.125, 0.5, 0.75, 0.5, 0.125]], dtype = np.float64)
-    img_odd_filtered = cv2.sepFilter2D(img_odd, -1, temp_odd, temp_odd)
-
-    # img_odd = np.zeros((H, W), dtype=np.float64)
-    # img_odd[0: H : 2, 0 : W : 2]= image[:,:]
-    # temp_odd = np.array([[0.125, 0.5, 0.75, 0.5, 0.125]], dtype = np.float64)
-    # kernel_odd = temp_odd * temp_odd.T
-    # img_odd_filtered = cv2.filter2D(img_odd, -1, kernel_odd)
-
-    # kernel_odd = temp_odd * temp_odd.T
-    # kernel_odd = np.asarray(kernel_odd, dtype = np.float64)
-
-    # temp_even = np.array([[0.125, 0.5, 0.75, 0.5, 0.125]], dtype = np.float64)
-    # kernel_even = temp_even * temp_even.T
-    # kernel_even = np.asarray(kernel_even, dtype = np.float64)
-
-    # img_odd = np.zeros((H, W), dtype=np.float64)
-    # img_odd[0: H : 2, 0 : W : 2]= image[:,:]
-    # img_odd[0: H : 2, 1 : W+1 : 2]= image[:,:]
-    # img_odd[1: H+1 : 2 ,0 : W : 2]= image[:,:]
-    # img_odd[1: H+1 : 2 ,1 : W+1 : 2]= image[:,:]
-
-    # img_even = np.zeros((H, W), dtype=np.float64)
-    # # img_even[0: H : 2, 0 : W : 2]= image[:,:]
-    # # img_even[0: H : 2, 1 : W+1 : 2]= image[:,:]
-    # # img_even[1: H+1 : 2 ,0 : W : 2]= image[:,:]
-    # img_even[1: H+1 : 2 ,1 : W+1 : 2]= image[:,:]
-
-    # img_odd_filtered = cv2.sepFilter2D(img_odd, -1, temp_odd, temp_odd)
-    # img_even_filtered = cv2.sepFilter2D(img_even, -1, temp_even, temp_even)
-
-    res = np.copy(img_odd_filtered)
-    # res[1: H+1 : 2 ,1 : W+1 : 2] = img_even_filtered[1: H+1 : 2 ,1 : W+1 : 2]
-    # res[0: H : 2 ,1 : W+1 : 2] = img_even_filtered[0: H : 2 ,1 : W+1 : 2]
-
-    # res = np.zeros((H, W), dtype=np.float64)
-    # temp_odd = np.array([[0.125, 0.75, 0.125]], dtype = np.float64)
-    # temp_even = np.array([[0.5, 0.,  0.5]], dtype = np.float64)
-
-    # res[0: H : 2, 0 : W : 2] = cv2.sepFilter2D(image, -1, 1, 1)
-    # res[1: H+1 : 2, 0 : W : 2] = cv2.sepFilter2D(image, -1, 1, 1)
-    # res[0: H : 2 ,1 : W+1 : 2] = cv2.sepFilter2D(image, -1, 1, 1)
-    # res[1: H+1 : 2 ,1 : W+1 : 2] = cv2.sepFilter2D(image, -1, 1, 1)
-    # cv2.imshow('res', res)
-
-    # print(img_even_filtered[-10: -1, 0:5])
-    # print(img_odd_filtered[-10: -1, 0:5])
-    print(img_odd[-5 : -1, 0:5])
-    print(img_odd_filtered[-5 : -1, 0:5])
-    # print(res[-10 : -1, 0 : 5])
+    kernel = np.array([[0.125, 0.5, 0.75, 0.5, 0.125]], dtype = np.float64)
+    res = cv2.sepFilter2D(img_odd, -1, kernel, kernel)
 
     return res
 
@@ -346,8 +295,21 @@ def laplacian_pyramid(g_pyr):
     Returns:
         list: Laplacian pyramid, with l_pyr[-1] = g_pyr[-1].
     """
-    expand_image(g_pyr[0])
-    # raise NotImplementedError
+
+
+    res = []
+    N = len(g_pyr)
+    for i in range(N-1):
+        pre = g_pyr[i]
+        cur = expand_image(g_pyr[i+1])
+        if pre.shape[0] < cur.shape[0]:
+            cur = np.delete(cur, (-1), axis=0)
+        if pre.shape[1] < cur.shape[1]:
+            cur = np.delete(cur, (-1), axis=1)
+        res.append(pre - cur)
+    res.append(g_pyr[-1])
+    return res
+    raise NotImplementedError
 
 
 def warp(image, U, V, interpolation, border_mode):
@@ -374,6 +336,12 @@ def warp(image, U, V, interpolation, border_mode):
                      warped[y, x] = image[y + V[y, x], x + U[y, x]]
     """
 
+    h, w = image.shape
+    X, Y = np.meshgrid(range(w), range(h))
+    addX = (X + U).astype(np.float32)
+    addY = (Y + V).astype(np.float32)
+    res = cv2.remap(image, addX, addY, interpolation=interpolation, borderMode=border_mode)
+    return res
     raise NotImplementedError
 
 
