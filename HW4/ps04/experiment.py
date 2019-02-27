@@ -196,7 +196,7 @@ def part_3a_1():
     yos_img_02_g_pyr = ps4.gaussian_pyramid(yos_img_02, levels)
 
     level_id = 2  # TODO: Select the level number (or id) you wish to use
-    k_size = 35 # TODO: Select a kernel size
+    k_size = 75 # TODO: Select a kernel size
     k_type = "uniform"  # TODO: Select a kernel type
     sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
     u, v = ps4.optic_flow_lk(yos_img_01_g_pyr[level_id],
@@ -225,7 +225,7 @@ def part_3a_2():
     yos_img_03_g_pyr = ps4.gaussian_pyramid(yos_img_03, levels)
 
     level_id = 2 # TODO: Select the level number (or id) you wish to use
-    k_size = 35 # TODO: Select a kernel size
+    k_size = 75 # TODO: Select a kernel size
     k_type = ""  # TODO: Select a kernel type
     sigma = 0 # TODO: Select a sigma value if you are using a gaussian kernel
     u, v = ps4.optic_flow_lk(yos_img_02_g_pyr[level_id],
@@ -253,9 +253,9 @@ def part_4a():
     shift_r40 = cv2.imread(os.path.join(input_dir, 'TestSeq',
                                         'ShiftR40.png'), 0) / 255.
 
-    levels = 1  # TODO: Define the number of levels
-    k_size = 0  # TODO: Select a kernel size
-    k_type = ""  # TODO: Select a kernel type
+    levels = 4  # TODO: Define the number of levels
+    k_size = 35  # TODO: Select a kernel size
+    k_type = "uniform"  # TODO: Select a kernel type
     sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
     interpolation = cv2.INTER_CUBIC  # You may try different values
     border_mode = cv2.BORDER_REFLECT101  # You may try different values
@@ -286,10 +286,10 @@ def part_4b():
     urban_img_02 = cv2.imread(
         os.path.join(input_dir, 'Urban2', 'urban02.png'), 0) / 255.
 
-    levels = 1  # TODO: Define the number of levels
-    k_size = 0  # TODO: Select a kernel size
-    k_type = ""  # TODO: Select a kernel type
-    sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
+    levels = 4  # TODO: Define the number of levels
+    k_size = 75  # TODO: Select a kernel size
+    k_type = "uniform"  # TODO: Select a kernel type
+    sigma = 10  # TODO: Select a sigma value if you are using a gaussian kernel
     interpolation = cv2.INTER_CUBIC  # You may try different values
     border_mode = cv2.BORDER_REFLECT101  # You may try different values
 
@@ -316,8 +316,44 @@ def part_5a():
 
     Place all your work in this file and this section.
     """
+    shift_0 = cv2.imread(os.path.join(input_dir, 'TestSeq',
+                                      'Shift0.png'), 0) / 255.
+    shift_r10 = cv2.imread(os.path.join(input_dir, 'TestSeq',
+                                        'ShiftR10.png'), 0) / 255.
+    levels = 4  # TODO: Define the number of levels
+    k_size = 35  # TODO: Select a kernel size
+    k_type = "uniform"  # TODO: Select a kernel type
+    sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
+    interpolation = cv2.INTER_CUBIC  # You may try different values
+    border_mode = cv2.BORDER_REFLECT101  # You may try different values
 
-    raise NotImplementedError
+    u, v = ps4.hierarchical_lk(shift_0, shift_r10, levels, k_size, k_type,
+                                   sigma, interpolation, border_mode)
+
+    t = 0.2
+    shift_r10_wraped_1 = ps4.warp(shift_0, -t*u, -t*v, interpolation, border_mode)
+
+    t = 0.4
+    shift_r10_wraped_2 = ps4.warp(shift_0, -t*u, -t*v, interpolation, border_mode)
+
+    t = 0.6
+    shift_r10_wraped_3 = ps4.warp(shift_0, -t*u, -t*v, interpolation, border_mode)
+
+    t = 0.8
+    shift_r10_wraped_4 = ps4.warp(shift_0, -t*u, -t*v, interpolation, border_mode)
+
+    H, W = shift_0.shape
+    target = np.ones((2*H, 3*W), dtype = np.float64)
+
+    target[0 : H, 0 : W] = ps4.normalize_and_scale(shift_0)
+    target[0 : H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_1)
+    target[0 : H, 2*W : 3*W] = ps4.normalize_and_scale(shift_r10_wraped_2)
+    target[H : 2*H, 0 : W] = ps4.normalize_and_scale(shift_r10_wraped_3)
+    target[H : 2*H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_4)
+    target[H : 2*H, 2*W : 3*W] = ps4.normalize_and_scale(shift_r10)
+    cv2.imwrite(os.path.join(output_dir, "ps4-5-a-1.png"),
+                ps4.normalize_and_scale(target))
+
 
 
 def part_5b():
@@ -328,8 +364,98 @@ def part_5b():
     Place all your work in this file and this section.
     """
 
-    raise NotImplementedError
+    mc01 = cv2.imread(os.path.join(input_dir, 'MiniCooper',
+                                      'mc01.png'), 0) / 255.
+    mc02 = cv2.imread(os.path.join(input_dir, 'MiniCooper',
+                                        'mc02.png'), 0) / 255.
+    levels = 4  # TODO: Define the number of levels
+    k_size = 35  # TODO: Select a kernel size
+    k_type = "uniform"  # TODO: Select a kernel type
+    sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
+    interpolation = cv2.INTER_CUBIC  # You may try different values
+    border_mode = cv2.BORDER_REFLECT101  # You may try different values
 
+    u, v = ps4.hierarchical_lk(mc01, mc02, levels, k_size, k_type,
+                                   sigma, interpolation, border_mode)
+
+    t = 0.2
+    shift_r10_wraped_1 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-2.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_1))
+
+    t = 0.4
+    shift_r10_wraped_2 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-3.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_2))
+
+    t = 0.6
+    shift_r10_wraped_3 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-4.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_3))
+
+    t = 0.8
+    shift_r10_wraped_4 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-5.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_4))
+
+    H, W = mc01.shape
+    target = np.ones((2*H, 3*W), dtype = np.float64)
+
+    target[0 : H, 0 : W] = ps4.normalize_and_scale(mc01)
+    target[0 : H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_1)
+    target[0 : H, 2*W : 3*W] = ps4.normalize_and_scale(shift_r10_wraped_2)
+    target[H : 2*H, 0 : W] = ps4.normalize_and_scale(shift_r10_wraped_3)
+    target[H : 2*H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_4)
+    target[H : 2*H, 2*W : 3*W] = ps4.normalize_and_scale(mc02)
+    cv2.imwrite(os.path.join(output_dir, "ps4-5-b-1.png"),
+                ps4.normalize_and_scale(target))
+
+
+    mc01 = cv2.imread(os.path.join(input_dir, 'MiniCooper',
+                                      'mc02.png'), 0) / 255.
+    mc02 = cv2.imread(os.path.join(input_dir, 'MiniCooper',
+                                        'mc03.png'), 0) / 255.
+    levels = 4  # TODO: Define the number of levels
+    k_size = 35  # TODO: Select a kernel size
+    k_type = "uniform"  # TODO: Select a kernel type
+    sigma = 0  # TODO: Select a sigma value if you are using a gaussian kernel
+    interpolation = cv2.INTER_CUBIC  # You may try different values
+    border_mode = cv2.BORDER_REFLECT101  # You may try different values
+
+    u, v = ps4.hierarchical_lk(mc01, mc02, levels, k_size, k_type,
+                                   sigma, interpolation, border_mode)
+
+    t = 0.2
+    shift_r10_wraped_1 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-2.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_1))
+
+    t = 0.4
+    shift_r10_wraped_2 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-3.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_2))
+
+    t = 0.6
+    shift_r10_wraped_3 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-4.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_3))
+
+    t = 0.8
+    shift_r10_wraped_4 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-5.png"),
+    #             ps4.normalize_and_scale(shift_r10_wraped_4))
+
+    H, W = mc01.shape
+    target = np.ones((2*H, 3*W), dtype = np.float64)
+
+    target[0 : H, 0 : W] = ps4.normalize_and_scale(mc01)
+    target[0 : H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_1)
+    target[0 : H, 2*W : 3*W] = ps4.normalize_and_scale(shift_r10_wraped_2)
+    target[H : 2*H, 0 : W] = ps4.normalize_and_scale(shift_r10_wraped_3)
+    target[H : 2*H, W : 2*W] = ps4.normalize_and_scale(shift_r10_wraped_4)
+    target[H : 2*H, 2*W : 3*W] = ps4.normalize_and_scale(mc02)
+    cv2.imwrite(os.path.join(output_dir, "ps4-5-b-2.png"),
+                ps4.normalize_and_scale(target))
 
 def part_6():
     """Challenge Problem
@@ -348,9 +474,9 @@ if __name__ == '__main__':
     part_2()
     part_3a_1()
     part_3a_2()
-    # part_4a()
-    # part_4b()
-    # part_5a()
-    # part_5b()
+    part_4a()
+    part_4b()
+    part_5a()
+    part_5b()
     # part_6()
     cv2.waitKey(0)

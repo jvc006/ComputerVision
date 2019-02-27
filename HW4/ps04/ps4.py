@@ -372,5 +372,31 @@ def hierarchical_lk(img_a, img_b, levels, k_size, k_type, sigma, interpolation,
             V (numpy.array): raw displacement (in pixels) along Y-axis,
                              same size and type as U.
     """
+    img_a_list = gaussian_pyramid(img_a, levels)
+    img_b_list = gaussian_pyramid(img_b, levels)
+
+
+    h, w = img_a.shape  
+    h = h//(2**(levels-1))
+    w = w//(2**(levels-1))
+    u = np.zeros((h, w), dtype = np.float64)
+    v = np.zeros((h, w), dtype = np.float64)
+
+    for level_id in range(levels-1, -1, -1):
+        if level_id != levels-1 :
+            u = expand_image(u)
+            v = expand_image(v)
+            u = 2*u
+            v = 2*v
+        imageB = img_b_list[level_id]
+        if level_id == levels-1 :
+            imageB_wraped = imageB
+        else:
+            imageB_wraped = warp(imageB, u, v, interpolation, border_mode)
+        imageA = img_a_list[level_id]
+        du, dv = optic_flow_lk(imageA, imageB_wraped, k_size, k_type, sigma)
+        u += du
+        v += dv
+    return (u, v)
 
     raise NotImplementedError
