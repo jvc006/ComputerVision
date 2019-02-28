@@ -9,10 +9,80 @@ import ps4
 # I/O directories
 input_dir = "input_images"
 output_dir = "output"
+VID_DIR = "input_videos"
 
+def video_frame_generator(filename):
+    video = cv2.VideoCapture(filename)
+
+    # Do not edit this while loop
+    while video.isOpened():
+        ret, frame = video.read()
+
+        if ret:
+            yield frame
+        else:
+            break
+    video.release()
+    yield None
+
+def mp4_video_writer(filename, frame_size, fps=20):
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    return cv2.VideoWriter(filename, fourcc, fps, frame_size)
+
+def save_image(filename, image):
+    """Convenient wrapper for writing images to the output directory."""
+    cv2.imwrite(os.path.join(output_dir, filename), image)
+
+def helper_for_part_6(video_name, fps, frame_ids, output_prefix, counter_init):
+
+    video = os.path.join(VID_DIR, video_name)
+    image_gen = video_frame_generator(video)
+
+    image = image_gen.__next__()
+    image_pre = image
+    h, w, d = image.shape
+
+    out_path = "output/ar_{}-{}".format(output_prefix[4:], video_name)
+    video_out = mp4_video_writer(out_path, (w, h), fps)
+
+    output_counter = counter_init
+
+    frame_num = 1
+
+    while image is not None:
+
+        print("Processing fame {}".format(frame_num))
+
+        image_pre_grey = cv2.cvtColor(image_pre, cv2.COLOR_BGR2GRAY)
+        image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        k_size = 35 
+        k_type = "uniform" 
+        sigma = 0 
+        u, v = ps4.optic_flow_lk(image_pre_grey, image_grey, k_size, k_type, sigma)
+        u_v = quiver(u, v, scale=0.1, stride=10)
+
+        res = np.copy(image)
+        res = cv2.addWeighted(res,1,u_v,1,0)
+
+        frame_id = frame_ids[(output_counter - 1) % 2]
+
+        if frame_num == frame_id:
+            out_str = output_prefix + "-{}.png".format(output_counter)
+            save_image(out_str, res)
+            output_counter += 1
+
+        video_out.write(res)
+
+        image_pre = image
+        image = image_gen.__next__()
+
+        frame_num += 1
+
+    video_out.release()
 
 # Utility code
-def quiver(u, v, scale, stride, color=(0, 255, 0)):
+def quiver(u, v, scale, stride, color=(255, 255, 255)):
 
     img_out = np.zeros((v.shape[0], u.shape[1], 3), dtype=np.uint8)
 
@@ -464,8 +534,11 @@ def part_6():
 
     Place all your work in this file and this section.
     """
+    video_file = "ps4-my-video.mp4"
+    fps = 30
+    frame_ids = [200, 400]
 
-    raise NotImplementedError
+    helper_for_part_6(video_file, fps, frame_ids, "ps3-6-a", 1)
 
 
 if __name__ == '__main__':
@@ -478,5 +551,5 @@ if __name__ == '__main__':
     part_4b()
     part_5a()
     part_5b()
-    # part_6()
+    part_6()
     cv2.waitKey(0)
