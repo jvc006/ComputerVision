@@ -101,43 +101,50 @@ def optic_flow_lk(img_a, img_b, k_size, k_type, sigma=1):
             V (numpy.array): raw displacement (in pixels) along
                              Y-axis, same size and type as U.
     """
+
+    if k_type == 'gaussian' : 
+        img_a = cv2.GaussianBlur(img_a, (k_size, k_size), sigma, sigma)
+        img_b = cv2.GaussianBlur(img_b, (k_size, k_size), sigma, sigma)
+
     I_t = img_b - img_a
     Grad_X = gradient_x(img_b)
     Grad_Y = gradient_y(img_b)
-
     Grad_X_X = np.square(Grad_X)
     Grad_X_Y = np.multiply(Grad_X, Grad_Y)
     Grad_Y_Y = np.square(Grad_Y)
-
     Grad_X_t = np.multiply(Grad_X, I_t)
     Grad_Y_t = np.multiply(Grad_Y, I_t)
 
-    kernel = np.ones((k_size, k_size),np.float32)
-
     h, w = img_a.shape
-
     A = np.zeros((2, 2, h, w), dtype = np.float32)
     b = np.zeros((2, h, w), dtype = np.float32)
 
-    A[0, 0, :, :] = cv2.filter2D(Grad_X_X,-1,kernel)
-    A[0, 1, :, :] = cv2.filter2D(Grad_X_Y,-1,kernel)
-    A[1, 0, :, :] = cv2.filter2D(Grad_X_Y,-1,kernel)
-    A[1, 1, :, :] = cv2.filter2D(Grad_Y_Y,-1,kernel)
-
-    b[0, :, :] = -cv2.filter2D(Grad_X_t,-1,kernel)
-    b[1, :, :] = -cv2.filter2D(Grad_Y_t,-1,kernel)
+    kernel = np.ones((k_size, k_size),np.float32)
+    A[0, 0] = cv2.filter2D(Grad_X_X, -1, kernel)
+    A[0, 1] = cv2.filter2D(Grad_X_Y, -1, kernel)
+    A[1, 0] = cv2.filter2D(Grad_X_Y, -1, kernel)
+    A[1, 1] = cv2.filter2D(Grad_Y_Y, -1, kernel)
+    b[0] = -cv2.filter2D(Grad_X_t, -1, kernel)
+    b[1] = -cv2.filter2D(Grad_Y_t, -1, kernel)
+    # A[0, 0] = cv2.GaussianBlur(Grad_X_X, (k_size, k_size), sigma, sigma)
+    # A[0, 1] = cv2.GaussianBlur(Grad_X_Y, (k_size, k_size), sigma, sigma)
+    # A[1, 0] = cv2.GaussianBlur(Grad_X_Y, (k_size, k_size), sigma, sigma)
+    # A[1, 1] = cv2.GaussianBlur(Grad_Y_Y, (k_size, k_size), sigma, sigma)
+    # b[0] = -cv2.GaussianBlur(Grad_X_t, (k_size, k_size), sigma, sigma)
+    # b[1] = -cv2.GaussianBlur(Grad_X_t, (k_size, k_size), sigma, sigma)
 
     inverse_A = np.copy(A)
-    denominator = np.clip(A[0, 0]*A[1, 1] - A[0, 1]*A[1, 0], 0.0000000000000001, np.inf)
+    denominator = np.clip(A[0, 0]*A[1, 1] - A[0, 1]*A[1, 0], 0.00000001, np.inf)
     # denominator = A[0, 0]*A[1, 1] - A[0, 1]*A[1, 0]
-    factor = 1/(denominator)
+    # factor = np.where(denominator != 0, 1/denominator, 0)
+    factor = 1/denominator
     inverse_A[0, 0] = factor * A[1, 1]
     inverse_A[0, 1] = -factor * A[1, 0]
     inverse_A[1, 0] = -factor * A[0, 1]
     inverse_A[1, 1] = factor * A[0, 0]
 
-    res1 = inverse_A[0, 0, :, :] * b[0, :, :] + inverse_A[0, 1, :, :] * b[1, :, :]
-    res2 = inverse_A[1, 0, :, :] * b[0, :, :] + inverse_A[1, 1, :, :] * b[1, :, :]
+    res1 = inverse_A[0, 0] * b[0] + inverse_A[0, 1] * b[1]
+    res2 = inverse_A[1, 0] * b[0] + inverse_A[1, 1] * b[1]
 
     return (np.asarray(res1, dtype = np.float32), np.asarray(res2,dtype = np.float32))
     raise NotImplementedError
@@ -240,10 +247,10 @@ def create_combined_img(img_list):
     for i in range(1, N, 1) :
         H, W = res.shape
         h, w = img_list[i].shape
-        target = np.ones((H, W + w), dtype = np.float32)
+        target = np.zeros((H, W + w), dtype = np.float32)
         target[: H, : W] = res
         target[: h, W : W + w] = normalize_and_scale(img_list[i])
-        target[h :, W : W + w] = 255.
+        # target[h :, W : W + w] = 255.
         res = target
 
     return res
@@ -374,7 +381,6 @@ def hierarchical_lk(img_a, img_b, levels, k_size, k_type, sigma, interpolation,
     """
     img_a_list = gaussian_pyramid(img_a, levels)
     img_b_list = gaussian_pyramid(img_b, levels)
-
 
     h, w = img_a.shape  
     h = h//(2**(levels-1))
