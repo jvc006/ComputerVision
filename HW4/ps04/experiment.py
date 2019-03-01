@@ -57,14 +57,14 @@ def helper_for_part_6(video_name, fps, frame_ids, output_prefix, counter_init):
         image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         levels = 4
-        k_size = 5
+        k_size = 75
         k_type = "uniform" 
-        sigma = 0.2
+        sigma = 0.1
         interpolation = cv2.INTER_CUBIC 
         border_mode = cv2.BORDER_REFLECT101
         u, v = ps4.hierarchical_lk(image_pre_grey, image_grey, levels, k_size, k_type,
                                    sigma, interpolation, border_mode)
-        u_v = quiver(u, v, scale=0.05, stride=14, color=(255, 255, 255))
+        u_v = quiver(u, v, scale=0.1, stride=20, color=(255, 255, 255))
 
         res = np.copy(image)
 
@@ -352,12 +352,12 @@ def part_4a():
     u_v = quiver(u20, v20, scale=0.4, stride=12)
     cv2.imwrite(os.path.join(output_dir, "ps4-4-a-2.png"), u_v)
 
-    k_size = 15  # TODO: Select a kernel size
+    k_size = 21  # TODO: Select a kernel size
     k_type = "gaussian"  # TODO: Select a kernel type
-    sigma = 2.2  # TODO: Select a sigma value if you are using a gaussian kernel
+    sigma = 1.7  # TODO: Select a sigma value if you are using a gaussian kernel
     u40, v40 = ps4.hierarchical_lk(shift_0, shift_r40, levels, k_size, k_type,
                                    sigma, interpolation, border_mode)
-    u_v = quiver(u40, v40, scale=0.2, stride=12)
+    u_v = quiver(u40, v40, scale=0.3, stride=12)
     cv2.imwrite(os.path.join(output_dir, "ps4-4-a-3.png"), u_v)
 
 
@@ -461,22 +461,22 @@ def part_5b():
 
     t = 0.2
     shift_r10_wraped_1 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-2.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-20.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_1))
 
     t = 0.4
     shift_r10_wraped_2 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-3.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-30.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_2))
 
     t = 0.6
     shift_r10_wraped_3 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-4.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-40.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_3))
 
     t = 0.8
     shift_r10_wraped_4 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-5.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-50.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_4))
 
     H, W = mc01.shape
@@ -508,22 +508,22 @@ def part_5b():
 
     t = 0.2
     shift_r10_wraped_1 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-2.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-20.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_1))
 
     t = 0.4
     shift_r10_wraped_2 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-3.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-30.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_2))
 
     t = 0.6
     shift_r10_wraped_3 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-4.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-40.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_3))
 
     t = 0.8
     shift_r10_wraped_4 = ps4.warp(mc01, -t*u, -t*v, interpolation, border_mode)
-    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-5.png"),
+    # cv2.imwrite(os.path.join(output_dir, "ps4-5-b-50.png"),
     #             ps4.normalize_and_scale(shift_r10_wraped_4))
 
     H, W = mc01.shape
@@ -547,9 +547,9 @@ def part_6():
     """
     video_file = "ps4-my-video.mp4"
     fps = 30
-    frame_ids = [100, 200]
+    frame_ids = [50, 80]
 
-    helper_for_part_6(video_file, fps, frame_ids, "ps3-6-a", 1)
+    helper_for_part_6(video_file, fps, frame_ids, "ps4-6-a", 1)
 
 
 if __name__ == '__main__':
