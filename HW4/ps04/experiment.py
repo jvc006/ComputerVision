@@ -547,7 +547,7 @@ def part_6():
     """
     video_file = "ps4-my-video.mp4"
     fps = 30
-    frame_ids = [50, 80]
+    frame_ids = [50, 79]
 
     helper_for_part_6(video_file, fps, frame_ids, "ps4-6-a", 1)
 
