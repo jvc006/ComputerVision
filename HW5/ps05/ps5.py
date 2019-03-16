@@ -153,6 +153,7 @@ class ParticleFilter(object):
             numpy.array: particles data structure.
         """
         j = np.random.choice(self.index, self.num_particles, True, p = self.weights)
+
         update_particles = self.particles[j]
 
         return update_particles
@@ -201,6 +202,45 @@ class ParticleFilter(object):
         p = np.argmax(self.weights)
         bestCuts = Addbordercolor[bottom[p]: top[p], left[p] : right[p]]
         return bestCuts
+
+    def calculate_weight(self, frame):
+        frame_grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        template_grey = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
+
+        H, W = frame_grey.shape
+        h, w = template_grey.shape
+
+        loc_x = np.array((self.particles[:, 0])).astype(int)
+        loc_y = np.array((self.particles[:, 1])).astype(int)
+        loc_x = np.clip(loc_x, 0, W-1)
+        loc_y = np.clip(loc_y, 0, H-1)
+
+        bordersize = h//2 + 1
+        Addborder=cv2.copyMakeBorder(frame_grey, top=bordersize, bottom=bordersize, \
+             left=bordersize, right=bordersize, borderType= cv2.BORDER_CONSTANT, value=[0,0,0])
+
+        loc_x = loc_x + bordersize
+        loc_y = loc_y + bordersize
+
+        top = loc_y + h//2
+        if h%2 == 0 :
+            bottom = loc_y - h//2
+        else:
+            bottom = loc_y - h//2 - 1
+
+        right = loc_x + w//2
+        if w%2 == 0 :
+            left = loc_x - w//2
+        else:
+            left = loc_x -w//2 - 1
+
+        frame_grey_Cuts = [Addborder[bottom[i]: top[i], left[i] : right[i]] \
+                                        for i in range(self.num_particles)]
+
+        weights_temp = np.array([self.get_error_metric(template_grey, frame_grey_Cut) \
+                                        for frame_grey_Cut in frame_grey_Cuts])
+        weights_temp /= np.sum(weights_temp)
+        return weights_temp
 
     def process(self, frame):
         """Processes a video frame (image) and updates the filter's state.
@@ -337,6 +377,10 @@ class MDParticleFilter(AppearanceModelPF):
         #
         # The way to do it is:
         # self.some_parameter_name = kwargs.get('parameter_name', default_value)
+        self.initial_template = template
+        self.count = 0
+        self.std = 0
+        self.calc_weights = 0.
 
     def process(self, frame):
         """Processes a video frame (image) and updates the filter's state.
@@ -352,4 +396,43 @@ class MDParticleFilter(AppearanceModelPF):
         Returns:
             None.
         """
-        raise NotImplementedError
+        self.count += 1
+
+        # if self.count == 146:
+        #     cv2.imshow('Tracking', frame)
+        #     cv2.waitKey(0)
+
+
+        weights_temp = self.calculate_weight(frame)
+        # weights_temp = sorted(weights_temp, reverse=True)
+        # self.calc_weights = np.sum(weights_temp[0:2])
+        self.calc_weights = max(weights_temp)
+
+        # print(self.calc_weights)
+
+        if self.calc_weights > 0.01 and 200 > self.count > 50:
+            # self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            # cv2.imshow('Tracking', frame)
+            # cv2.waitKey(0)
+        
+            pass
+
+            # particles_temp = self.resample_particles()
+    
+            # self.particles = particles_temp
+
+        else :
+            self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            bestcut = self.update_weight(frame)
+            self.particles = self.resample_particles()
+
+
+        ratio = .995**(self.count)
+        self.template = cv2.resize(self.initial_template, (0,0), fx=ratio, fy=ratio) 
+        # cv2.imshow('Tracking', self.template)
+        # cv2.waitKey(1)
+
+
+
+
+

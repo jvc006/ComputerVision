@@ -287,9 +287,9 @@ def part_4():
                    240: os.path.join(output_dir, 'ps5-4-a-3.png'),
                    300: os.path.join(output_dir, 'ps5-4-a-4.png')}
 
-    num_particles = 0  # Define the number of particles
-    sigma_md = 0  # Define the value of sigma for the measurement exponential equation
-    sigma_dyn = 0  # Define the value of sigma for the particles movement (dynamics)
+    num_particles = 200  # Define the number of particles
+    sigma_md = 5  # Define the value of sigma for the measurement exponential equation
+    sigma_dyn = 5  # Define the value of sigma for the particles movement (dynamics)
 
     run_particle_filter(ps5.MDParticleFilter,
                         os.path.join(input_dir, "pedestrians"),
@@ -311,7 +311,24 @@ def part_5():
 
     Place all your work in this file and this section.
     """
-    raise NotImplementedError
+    template_rect = {'x': 264, 'y': 192, 'w': 124, 'h': 124}
+
+    save_frames = {29: os.path.join(output_dir, 'ps5-5-a-1.png'),
+                   56: os.path.join(output_dir, 'ps5-5-a-2.png'),
+                   71: os.path.join(output_dir, 'ps5-5-a-3.png')}
+
+    num_particles = 500  # Define the number of particles
+    sigma_md = 10  # Define the value of sigma for the measurement exponential equation
+    sigma_dyn = 10  # Define the value of sigma for the particles movement (dynamics)
+    alpha = 0.1  # Set a value for alpha
+
+    run_particle_filter(ps5.AppearanceModelPF,
+                        os.path.join(input_dir, "TUD-Campus"),
+                        template_rect,
+                        save_frames,
+                        num_particles=num_particles, sigma_exp=sigma_md,
+                        sigma_dyn=sigma_dyn, alpha=alpha,
+                        template_coords=template_rect)  # Add more if you need to
 
 
 def part_6():
@@ -328,7 +345,7 @@ if __name__ == '__main__':
     # part_1c()
     # part_2a()
     # part_2b()
-    part_3()
+    # part_3()
     # part_4()
-    # part_5()
+    part_5()
     # part_6()
