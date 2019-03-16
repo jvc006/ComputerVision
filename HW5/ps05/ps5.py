@@ -302,11 +302,11 @@ class ParticleFilter(object):
         for i in range(self.num_particles):
             x_weighted_mean += self.particles[i, 0] * self.weights[i]
             y_weighted_mean += self.particles[i, 1] * self.weights[i]
-            cv2.circle(frame_in, (int(self.particles[i,0]), int(self.particles[i,1])), 1, (0, 0, 0), -1)
+            cv2.circle(frame_in, (int(self.particles[i,0]), int(self.particles[i,1])), 1, (0, 255, 0), -1)
 
         m, n, channel = self.template.shape
         cv2.rectangle(frame_in, (int(x_weighted_mean) - n // 2, int(y_weighted_mean) - m // 2),
-                         (int(x_weighted_mean) + n // 2, int(y_weighted_mean) + m // 2), (0, 0, 0), 2)
+                         (int(x_weighted_mean) + n // 2, int(y_weighted_mean) + m // 2), (0, 255, 0), 2)
         # Complete the rest of the code as instructed.
 
         weighted_mean_dis = 0
@@ -434,5 +434,147 @@ class MDParticleFilter(AppearanceModelPF):
 
 
 
+class MDParticleFilter(AppearanceModelPF):
+    """A variation of particle filter tracker that incorporates more dynamics."""
 
+    def __init__(self, frame, template, **kwargs):
+        """Initializes MD particle filter object.
+
+        The documentation for this class is the same as the ParticleFilter
+        above. By calling super(...) all the elements used in ParticleFilter
+        will be inherited so you don't have to declare them again.
+        """
+
+        super(MDParticleFilter, self).__init__(frame, template, **kwargs)  # call base class constructor
+        # If you want to add more parameters, make sure you set a default value so that
+        # your test doesn't fail the autograder because of an unknown or None value.
+        #
+        # The way to do it is:
+        # self.some_parameter_name = kwargs.get('parameter_name', default_value)
+        self.initial_template = template
+        self.count = 0
+        self.std = 0
+        self.calc_weights = 0.
+
+    def process(self, frame):
+        """Processes a video frame (image) and updates the filter's state.
+
+        This process is also inherited from ParticleFilter. Depending on your
+        implementation, you may comment out this function and use helper
+        methods that implement the "More Dynamics" procedure.
+
+        Args:
+            frame (numpy.array): color BGR uint8 image of current video frame,
+                                 values in [0, 255].
+
+        Returns:
+            None.
+        """
+        self.count += 1
+
+        # if self.count == 146:
+        #     cv2.imshow('Tracking', frame)
+        #     cv2.waitKey(0)
+
+
+        weights_temp = self.calculate_weight(frame)
+        # weights_temp = sorted(weights_temp, reverse=True)
+        # self.calc_weights = np.sum(weights_temp[0:2])
+        self.calc_weights = max(weights_temp)
+
+        # print(self.calc_weights)
+
+        if self.calc_weights > 0.01 and 200 > self.count > 50:
+            # self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            # cv2.imshow('Tracking', frame)
+            # cv2.waitKey(0)
+        
+            pass
+
+            # particles_temp = self.resample_particles()
+    
+            # self.particles = particles_temp
+
+        else :
+            self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            bestcut = self.update_weight(frame)
+            self.particles = self.resample_particles()
+
+
+        ratio = .995**(self.count)
+        self.template = cv2.resize(self.initial_template, (0,0), fx=ratio, fy=ratio) 
+        # cv2.imshow('Tracking', self.template)
+        # cv2.waitKey(1)
+
+class MDParticleFilter_2(AppearanceModelPF):
+    """A variation of particle filter tracker that incorporates more dynamics."""
+
+    def __init__(self, frame, template, **kwargs):
+        """Initializes MD particle filter object.
+
+        The documentation for this class is the same as the ParticleFilter
+        above. By calling super(...) all the elements used in ParticleFilter
+        will be inherited so you don't have to declare them again.
+        """
+
+        super(MDParticleFilter_2, self).__init__(frame, template, **kwargs)  # call base class constructor
+        # If you want to add more parameters, make sure you set a default value so that
+        # your test doesn't fail the autograder because of an unknown or None value.
+        #
+        # The way to do it is:
+        # self.some_parameter_name = kwargs.get('parameter_name', default_value)
+        self.initial_template = template
+        self.count = 0
+        self.std = 0
+        self.calc_weights = 0.
+
+    def process(self, frame):
+        """Processes a video frame (image) and updates the filter's state.
+
+        This process is also inherited from ParticleFilter. Depending on your
+        implementation, you may comment out this function and use helper
+        methods that implement the "More Dynamics" procedure.
+
+        Args:
+            frame (numpy.array): color BGR uint8 image of current video frame,
+                                 values in [0, 255].
+
+        Returns:
+            None.
+        """
+        self.count += 1
+
+        # if self.count == 146:
+        #     cv2.imshow('Tracking', frame)
+        #     cv2.waitKey(0)
+
+
+        weights_temp = self.calculate_weight(frame)
+        # weights_temp = sorted(weights_temp, reverse=True)
+        # self.calc_weights = np.sum(weights_temp[0:2])
+        self.calc_weights = max(weights_temp)
+
+        # print(self.calc_weights)
+
+        if self.calc_weights > 0.002 and (20 > self.count > 12 or 42 > self.count > 34):
+            # self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            # cv2.imshow('Tracking', frame)
+            # cv2.waitKey(0)
+        
+            pass
+
+            # particles_temp = self.resample_particles()
+    
+            # self.particles = particles_temp
+
+        else :
+            self.particles += np.random.normal(0, self.sigma_dyn, self.particles.shape)
+            bestcut = self.update_weight(frame)
+            self.particles = self.resample_particles()
+
+
+        ratio = .995**(self.count)
+        self.template = cv2.resize(self.initial_template, (0,0), fx=ratio, fy=ratio) 
+        # cv2.imshow('Tracking', self.template)
+        # cv2.waitKey(1)
 
